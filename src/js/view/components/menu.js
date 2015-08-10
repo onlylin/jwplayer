@@ -35,8 +35,13 @@ define([
 
                 this.iconUI.on('tap', this.toggleOpenStateListener);
 
-                this.el.addEventListener('mouseover', this.openTooltipListener);
-                this.el.addEventListener('mouseout', this.closeTooltipListener);
+                if(_.isUndefined(window.PointerEvent)){
+                    this.el.addEventListener('mouseover', this.openTooltipListener);
+                    this.el.addEventListener('mouseout', this.closeTooltipListener);
+                } else {
+                    this.el.addEventListener('pointerover', this.openTooltipListener);
+                    this.el.addEventListener('pointerout', this.closeTooltipListener);
+                }
 
                 var innerHtml = menuTemplate(list);
                 var elem = utils.createElement(innerHtml);
