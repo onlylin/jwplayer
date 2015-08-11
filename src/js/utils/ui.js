@@ -66,6 +66,7 @@ define([
         var _elem = elem,
             _enableDoubleTap = (options && options.enableDoubleTap), // and double click
             _preventScrolling = (options && options.preventScrolling),
+            _useHover = (options && options.useHover),
             _hasMoved = false,
             _startX = 0,
             _startY = 0,
@@ -80,10 +81,37 @@ define([
         // (windows phones) still get listeners just in case they want to use them.
         if(_hasPointerEvents) {
             elem.addEventListener('pointerdown', interactStartHandler);
+            if(_useHover){
+                elem.addEventListener('pointerover', overHandler);
+                elem.addEventListener('pointerout', outHandler);
+            }
         } else if(_isDesktop){
             elem.addEventListener('mousedown', interactStartHandler);
+            if(_useHover) {
+                elem.addEventListener('mouseover', overHandler);
+                elem.addEventListener('mouseout', outHandler);
+            }
         }
+
         elem.addEventListener('touchstart', interactStartHandler);
+
+        function overHandler(evt){
+            if( evt instanceof MouseEvent) {
+                if(!_hasPointerEvents || (_hasPointerEvents && evt.pointerType !== 'touch')) {
+                    triggerEvent(events.touchEvents.OVER, evt);
+                }
+            }
+        }
+
+        function outHandler(evt){
+            console.log('related', evt.relatedTarget.className);
+
+            if( evt instanceof MouseEvent) {
+                if(!_hasPointerEvents || (_hasPointerEvents && evt.pointerType !== 'touch')) {
+                    triggerEvent(events.touchEvents.OUT, evt);
+                }
+            }
+        }
 
         function interactStartHandler(evt) {
             var isMouseEvt = evt instanceof MouseEvent;
@@ -95,7 +123,8 @@ define([
             if(!isMouseEvt || (isMouseEvt && !isRightClick(evt))){
                 if(_hasPointerEvents){
                     if(evt.isPrimary){
-                        if(_preventScrolling){
+                        if(_preventScrolling /*&& evt.pointerType === 'touch'*/){
+                            console.log('pointer captured', elem.className);
                             _pointerId = evt.pointerId;
                             elem.setPointerCapture(_pointerId);
                         }

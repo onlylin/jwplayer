@@ -34,6 +34,7 @@ define([
             utils.toggleClass(this.el, 'jw-open', this.isOpen);
         },
         closeTooltip: function() {
+            console.log('evt', arguments[0].type, this.el.className);
             this.isOpen = false;
             utils.toggleClass(this.el, 'jw-open', this.isOpen);
         },
