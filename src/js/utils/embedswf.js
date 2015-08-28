@@ -14,7 +14,7 @@ define([
         object.appendChild(param);
     }
 
-    function embed(swfUrl, container, id, wmode) {
+    function embed(swfUrl, container, id, wmode, poster) {
         var swf;
 
         wmode = wmode || 'opaque';
@@ -44,6 +44,7 @@ define([
             }
 
         } else {
+
             swf = document.createElement('object');
             swf.setAttribute('type', 'application/x-shockwave-flash');
             swf.setAttribute('data', swfUrl);
@@ -57,6 +58,7 @@ define([
             appendParam(swf, 'allowscriptaccess', 'always');
             appendParam(swf, 'wmode', wmode);
             appendParam(swf, 'menu', 'false');
+            appendParam(swf, 'poster', poster || '');
 
             container.appendChild(swf, container);
         }

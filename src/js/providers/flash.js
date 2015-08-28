@@ -166,7 +166,14 @@ define([
                         return found;
                     }
 
-                    return EmbedSwf.embed(_playerConfig.flashplayer, parent, getObjectId(_playerId));
+                    var poster = '';
+                    if (_item) {
+                        poster = _item.image;
+                    } else {
+                        poster = _playerConfig.playlist[0].image;
+                    }
+
+                    return EmbedSwf.embed(_playerConfig.flashplayer, parent, getObjectId(_playerId), null, poster);
                 },
 
                 getContainer: function() {
