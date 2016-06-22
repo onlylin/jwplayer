@@ -5,9 +5,8 @@ define(['../utils/underscore',
         '../controller/captions',
         '../parsers/parsers',
         '../parsers/captions/srt',
-        '../parsers/captions/dfxp',
-        '../polyfills/vtt'
-], function(_, ID3Parser, utils, dom, Captions, parsers, srt, dfxp, VTT) {
+        '../parsers/captions/dfxp'
+], function(_, ID3Parser, utils, dom, Captions, parsers, srt, dfxp) {
     /**
      * Used across all providers for loading tracks and handling browser track-related events
      */
@@ -113,7 +112,7 @@ define(['../utils/underscore',
     }
 
     function setupSideloadedTracks(tracks) {
-        _renderNatively = _nativeRenderingSupported(this.getName().name);
+        _renderNatively = _renderNatively || _nativeRenderingSupported(this.getName().name);
         if (this.isSDK || !tracks) {
             return;
         }
@@ -335,6 +334,8 @@ define(['../utils/underscore',
             _initTextTracks();
         }
 
+        _renderNatively = _renderNatively || _nativeRenderingSupported(this.getName().name);
+
         for (var i = 0; i < tracks.length; i++) {
             var itemTrack = tracks[i];
             var track = _createTrack(itemTrack, this.video);
@@ -423,7 +424,7 @@ define(['../utils/underscore',
                 // parse VTT/SRT track
                 status = utils.tryCatch(function () {
                     var responseText = xhr.responseText;
-                    if (responseText.indexOf('WEBVTT') !== -1) {
+                    if (responseText.indexOf('WEBVTT') >= 0) {
                         // make VTTCues from VTT track
                         _parseCuesFromText(xhr.responseText, track);
                     } else {
@@ -509,26 +510,28 @@ define(['../utils/underscore',
     }
 
     function _parseCuesFromText(srcContent, track) {
-        var WebVTT = VTT.WebVTT;
-        var parser = new WebVTT.Parser(window, WebVTT.StringDecoder());
-        parser.oncue = function(cue) {
-            if (_renderNatively) {
-                track.addCue(cue);
-            } else {
-                track.data.push(cue);
-            }
-        };
+        require.ensure(['../parsers/captions/vttparser'], function (require) {
+            var VTTParser = require('../parsers/captions/vttparser');
+            var parser = new VTTParser(window);
+            parser.oncue = function(cue) {
+                if (_renderNatively) {
+                    track.addCue(cue);
+                } else {
+                    track.data.push(cue);
+                }
+            };
 
-        parser.onparsingerror = function(error) {
-            _errorHandler(error);
-        };
+            parser.onparsingerror = function(error) {
+                _errorHandler(error);
+            };
 
-        parser.onflush = function() {
-            // TODO: event saying track is done being parsed
-        };
+            parser.onflush = function() {
+                // TODO: event saying track is done being parsed
+            };
 
-        parser.parse(srcContent);
-        parser.flush();
+            parser.parse(srcContent);
+            parser.flush();
+        }, 'vttparser');
     }
 
     function _errorHandler(error) {
