@@ -91,11 +91,12 @@ define(['../utils/underscore',
 
                     _addTrackToList(track);
 
-                    if (track.embedded || track.groupid === 'subs') {
+                    if (track.embedded) {
                         _embeddedTrackCount++;
                     }
-                } else if (track.name) {
-                    // setup track coming from Flash HLS
+                } else if (track.flashhls) {
+                    // setup subtitles track coming from Flash HLS Manifest
+                    _embeddedTrackCount++;
                     _addTrackToList(_createTrack(track));
                 }
             }
@@ -134,13 +135,13 @@ define(['../utils/underscore',
         }
     }
 
-    function setSubtitlesTrack(index) {
+    function setSubtitlesTrack(menuIndex) {
         if (!_textTracks) {
             return;
         }
 
         // 0 = 'Off'
-        if (index === 0) {
+        if (menuIndex === 0) {
             _.each(_textTracks, function (track) {
                 track.mode = 'disabled';
             });
@@ -148,7 +149,7 @@ define(['../utils/underscore',
 
         // Track index is 1 less than controlbar index to account for 'Off' = 0.
         // Prevent unnecessary track change events
-        if (_currentTextTrackIndex === index - 1) {
+        if (_currentTextTrackIndex === menuIndex - 1) {
             return;
         }
 
@@ -156,7 +157,7 @@ define(['../utils/underscore',
         disableTextTrack();
 
         // Set the provider's index to the model's index, then show the selected track if it exists
-        _currentTextTrackIndex = index - 1;
+        _currentTextTrackIndex = menuIndex - 1;
 
         if (_renderNatively) {
             if (_textTracks[_currentTextTrackIndex]) {
@@ -184,8 +185,8 @@ define(['../utils/underscore',
 
         track.source = cueData.source;
         var cues = cueData.captions || [],
-            cuesToConvert = [];
-        var sort = false;
+            cuesToConvert = [],
+            sort = false;
         for (var i=0; i<cues.length; i++) {
             var cue = cues[i];
             var cueId = cueData.name +'_'+ cue.begin +'_'+ cue.end;
@@ -321,7 +322,6 @@ define(['../utils/underscore',
         _embeddedTrackCount = 0;
         _unknownCount = 0;
         _renderNatively = false;
-
     }
 
     function _addTracks(tracks) {
@@ -539,7 +539,7 @@ define(['../utils/underscore',
     }
 
     function _nativeRenderingSupported(providerName) {
-        return providerName.indexOf('flash') === -1 && utils.isChrome() || utils.isIOS() || utils.isSafari();
+        return providerName.indexOf('flash') === -1 && (utils.isChrome() || utils.isIOS() || utils.isSafari());
     }
 
     return Tracks;
