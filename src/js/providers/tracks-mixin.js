@@ -43,7 +43,7 @@ define(['../utils/underscore',
         }
 
         if (!this._textTracks) {
-            this._initTextTracks();
+            _initTextTracks();
         }
 
         // filter for 'subtitles' or 'captions' tracks
@@ -110,7 +110,7 @@ define(['../utils/underscore',
             return;
         }
 
-        if (!this._tracksAlreadySideloaded.call(this, tracks)) {
+        if (!_tracksAlreadySideloaded.call(this, tracks)) {
             // Add tracks if we're starting playback or resuming after a midroll
             if (this._renderNatively) {
                 disableTextTrack();
@@ -380,7 +380,7 @@ define(['../utils/underscore',
         var nonSideloadedTracks = _.filter(this._textTracks, function (track) {
             return track.embedded || track.groupid === 'subs';
         });
-        this._initTextTracks();
+        _initTextTracks();
         _.each(nonSideloadedTracks, function (track) {
            this._tracksById[track._id] = track;
         });
@@ -402,7 +402,7 @@ define(['../utils/underscore',
         }
 
         if (!this._textTracks) {
-            this._initTextTracks();
+            _initTextTracks();
         }
 
         this._renderNatively = _nativeRenderingSupported(this.getName().name);
