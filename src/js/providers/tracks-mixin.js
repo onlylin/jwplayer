@@ -54,7 +54,7 @@ define(['../utils/underscore',
                     track._id = createTrackId(track);
                     track.inuse = true;
                 }
-                if (!track.inuse || !track._tracksById || this._tracksById[track._id]) {
+                if (!track.inuse || !this._tracksById || this._tracksById[track._id]) {
                     continue;
                 }
                 // setup TextTrack
@@ -120,6 +120,10 @@ define(['../utils/underscore',
         }
     }
 
+    function getSubtitlesTrack() {
+        return this._currentTextTrackIndex;
+    }
+
     function setSubtitlesTrack(menuIndex) {
         if (!this._textTracks) {
             return;
@@ -155,10 +159,6 @@ define(['../utils/underscore',
                 tracks: this._textTracks
             });
         }
-    }
-
-    function getSubtitlesTrack() {
-        return this._currentTextTrackIndex;
     }
 
     function addCaptionsCue(cueData) {
@@ -375,7 +375,7 @@ define(['../utils/underscore',
     //////////////////////
     ////// PRIVATE METHODS
     //////////////////////
-    
+
     function _nativeRenderingSupported(providerName) {
         return providerName.indexOf('flash') === -1 && (utils.isChrome() || utils.isIOS() || utils.isSafari());
     }
