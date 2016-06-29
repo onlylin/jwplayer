@@ -54,7 +54,7 @@ define(['../utils/underscore',
                     track._id = createTrackId(track);
                     track.inuse = true;
                 }
-                if (!track.inuse || this._tracksById[track._id]) {
+                if (!track.inuse || !track._tracksById || this._tracksById[track._id]) {
                     continue;
                 }
                 // setup TextTrack
@@ -93,12 +93,13 @@ define(['../utils/underscore',
             }
         }
 
-        if (this._renderNatively) {
-            this.addTracksListener(this._textTracks, 'change', textTrackChangeHandler);
-        }
-
-        if (this._textTracks && this._textTracks.length) {
-            this.trigger('subtitlesTracks', {tracks: this._textTracks});
+        if (this._textTracks) {
+            if (this._renderNatively) {
+                this.addTracksListener(this._textTracks, 'change', textTrackChangeHandler);
+            }
+            if (this._textTracks.length) {
+                this.trigger('subtitlesTracks', {tracks: this._textTracks});
+            }
         }
     }
 
@@ -255,6 +256,10 @@ define(['../utils/underscore',
     }
 
     function addTracksListener(tracks, eventType, handler) {
+        if (!tracks) {
+            return;
+        }
+        
         handler = handler.bind(this);
 
         if (tracks.addEventListener) {
@@ -571,6 +576,7 @@ define(['../utils/underscore',
                 if (this._renderNatively) {
                     track.addCue(cue);
                 } else {
+                    track.data = track.data || [];
                     track.data.push(cue);
                 }
             };
