@@ -394,7 +394,7 @@ define(['../utils/underscore',
         var track;
         if (_this._renderNatively) {
             var tracks = this.video.textTracks;
-            track = _.findWhere(tracks, {'inuse': false});
+            track = _.findWhere(tracks, {'_id': itemTrack.file});
             if (track) {
                 track.kind = itemTrack.kind;
                 track.label = itemTrack.label;
