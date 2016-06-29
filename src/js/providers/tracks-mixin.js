@@ -9,6 +9,7 @@ define(['../utils/underscore',
     /**
      * Used across all providers for loading tracks and handling browser track-related events
      */
+    var _this = this;
     var Tracks = {
         _textTracks: null,
         _tracksById: null,
@@ -34,13 +35,13 @@ define(['../utils/underscore',
     };
 
     function setTextTracks(tracks) {
-        this._currentTextTrackIndex = -1;
+        _this._currentTextTrackIndex = -1;
 
         if (!tracks) {
             return;
         }
 
-        if (!this._textTracks) {
+        if (!_this._textTracks) {
             _initTextTracks();
         }
 
@@ -54,14 +55,14 @@ define(['../utils/underscore',
                     track._id = createTrackId(track);
                     track.inuse = true;
                 }
-                if (!track.inuse || !this._tracksById || this._tracksById[track._id]) {
+                if (!track.inuse || !_this._tracksById || _this._tracksById[track._id]) {
                     continue;
                 }
                 // setup TextTrack
                 if (track.kind === 'metadata') {
                     track.mode = 'showing';
                     track.oncuechange = _cueChangeHandler.bind(this);
-                    this._tracksById[track._id] = track;
+                    _this._tracksById[track._id] = track;
                 }
                 else if (track.kind === 'subtitles' || track.kind === 'captions') {
                     var mode = track.mode,
@@ -79,13 +80,13 @@ define(['../utils/underscore',
                     track.mode = mode;
 
                     // Parsed cues may not have been added to this track yet
-                    if (this._cuesByTrackId[track._id] && !this._cuesByTrackId[track._id].loaded) {
-                        var cues = this._cuesByTrackId[track._id].cues;
+                    if (_this._cuesByTrackId[track._id] && !_this._cuesByTrackId[track._id].loaded) {
+                        var cues = _this._cuesByTrackId[track._id].cues;
                         while((cue = cues.pop())) {
                             track.addCue(cue);
                         }
                         track.mode = mode;
-                        this._cuesByTrackId[track._id].loaded = true;
+                        _this._cuesByTrackId[track._id].loaded = true;
                     }
 
                     _addTrackToList(track);
@@ -93,52 +94,52 @@ define(['../utils/underscore',
             }
         }
 
-        if (this._textTracks) {
-            if (this._renderNatively) {
-                this.addTracksListener(this._textTracks, 'change', textTrackChangeHandler);
+        if (_this._textTracks) {
+            if (_this._renderNatively) {
+                this.addTracksListener(_this._textTracks, 'change', textTrackChangeHandler);
             }
-            if (this._textTracks.length) {
-                this.trigger('subtitlesTracks', {tracks: this._textTracks});
+            if (_this._textTracks.length) {
+                this.trigger('subtitlesTracks', {tracks: _this._textTracks});
             }
         }
     }
 
     function setupSideloadedTracks(tracks) {
-        this._renderNatively = _nativeRenderingSupported(this.getName().name);
-        if (this.isSDK || !tracks) {
+        _this._renderNatively = _nativeRenderingSupported(this.getName().name);
+        if (_this.isSDK || !tracks) {
             return;
         }
 
         if (!_tracksAlreadySideloaded.call(this, tracks)) {
             // Add tracks if we're starting playback or resuming after a midroll
-            if (this._renderNatively) {
+            if (_this._renderNatively) {
                 disableTextTrack();
                 _clearSideloadedTextTracks();
             }
-            this.itemTracks = tracks;
+            _this.itemTracks = tracks;
             addTextTracks.call(this, tracks);
         }
     }
 
     function getSubtitlesTrack() {
-        return this._currentTextTrackIndex;
+        return _this._currentTextTrackIndex;
     }
 
     function setSubtitlesTrack(menuIndex) {
-        if (!this._textTracks) {
+        if (!_this._textTracks) {
             return;
         }
 
         // 0 = 'Off'
         if (menuIndex === 0) {
-            _.each(this._textTracks, function (track) {
+            _.each(_this._textTracks, function (track) {
                 track.mode = 'disabled';
             });
         }
 
         // Track index is 1 less than controlbar index to account for 'Off' = 0.
         // Prevent unnecessary track change events
-        if (this._currentTextTrackIndex === menuIndex - 1) {
+        if (_this._currentTextTrackIndex === menuIndex - 1) {
             return;
         }
 
@@ -146,17 +147,17 @@ define(['../utils/underscore',
         disableTextTrack();
 
         // Set the provider's index to the model's index, then show the selected track if it exists
-        this._currentTextTrackIndex = menuIndex - 1;
+        _this._currentTextTrackIndex = menuIndex - 1;
 
-        if (this._renderNatively) {
-            if (this._textTracks[this._currentTextTrackIndex]) {
-                this._textTracks[this._currentTextTrackIndex].mode = 'showing';
+        if (_this._renderNatively) {
+            if (_this._textTracks[_this._currentTextTrackIndex]) {
+                _this._textTracks[_this._currentTextTrackIndex].mode = 'showing';
             }
 
             // Update the model index since the track change may have come from a browser event
             this.trigger('subtitlesTrackChanged', {
-                currentTrack: this._currentTextTrackIndex + 1,
-                tracks: this._textTracks
+                currentTrack: _this._currentTextTrackIndex + 1,
+                tracks: _this._textTracks
             });
         }
     }
@@ -166,16 +167,16 @@ define(['../utils/underscore',
             return;
         }
         var trackId = cueData.trackid.toString();
-        var track = this._tracksById && this._tracksById[trackId];
+        var track = _this._tracksById && _this._tracksById[trackId];
         if (!track) {
-            this._renderNatively = _nativeRenderingSupported(this.getName().name);
+            _this._renderNatively = _nativeRenderingSupported(this.getName().name);
             track = {
                 kind: 'captions',
                 _id: trackId,
                 data: []
             };
             addTextTracks.call(this, [track]);
-            this.trigger('subtitlesTracks', {tracks: this._textTracks});
+            this.trigger('subtitlesTracks', {tracks: _this._textTracks});
         }
 
         var time, cueId;
@@ -191,7 +192,7 @@ define(['../utils/underscore',
         time = cueData.begin;
         cueId = cueData.begin + '_' + cueData.text;
 
-        var cue = this._metaCuesByTextTime[cueId];
+        var cue = _this._metaCuesByTextTime[cueId];
         if (!cue) {
             cue = {
                 begin: time,
@@ -200,7 +201,7 @@ define(['../utils/underscore',
             if(cueData.end) {
                 cue.end = cueData.end;
             }
-            this._metaCuesByTextTime[cueId] = cue;
+            _this._metaCuesByTextTime[cueId] = cue;
             var vttCue = _convertToVTTCues([cue])[0];
             track.data.push(vttCue);
         }
@@ -209,11 +210,11 @@ define(['../utils/underscore',
     function addVTTCue(cueData) {
 
         var trackId = 'native' + cueData.type,
-            track = this._tracksById[trackId],
+            track = _this._tracksById[trackId],
             label = cueData.type === 'captions' ? 'Unknown CC' : 'ID3 Metadata';
 
         if (!track) {
-            this._renderNatively = _nativeRenderingSupported(this.getName().name);
+            _this._renderNatively = _nativeRenderingSupported(this.getName().name);
             var itemTrack = {
                 kind: cueData.type,
                 _id: trackId,
@@ -228,7 +229,7 @@ define(['../utils/underscore',
 
     function addCuesToTrack(cueData) {
         // convert cues coming from the flash provider into VTTCues, then append them to track
-        var track = this._tracksById[cueData.name];
+        var track = _this._tracksById[cueData.name];
         if (!track) {
             return;
         }
@@ -240,8 +241,8 @@ define(['../utils/underscore',
         for (var i=0; i<cues.length; i++) {
             var cue = cues[i];
             var cueId = cueData.name +'_'+ cue.begin +'_'+ cue.end;
-            if (!this._metaCuesByTextTime[cueId]) {
-                this._metaCuesByTextTime[cueId] = cue;
+            if (!_this._metaCuesByTextTime[cueId]) {
+                _this._metaCuesByTextTime[cueId] = cue;
                 cuesToConvert.push(cue);
                 sort = true;
             }
@@ -281,39 +282,39 @@ define(['../utils/underscore',
     }
 
     function clearTracks() {
-        this._textTracks = null;
-        this._tracksById = null;
-        this._cuesByTrackId = null;
-        this._metaCuesByTextTime = null;
-        this._unknownCount = 0;
-        this._activeCuePosition = null;
-        if (this._renderNatively) {
+        _this._textTracks = null;
+        _this._tracksById = null;
+        _this._cuesByTrackId = null;
+        _this._metaCuesByTextTime = null;
+        _this._unknownCount = 0;
+        _this._activeCuePosition = null;
+        if (_this._renderNatively) {
             _removeCues(this.video.textTracks);
         }
-        this._renderNatively = false;
+        _this._renderNatively = false;
     }
 
     function disableTextTrack() {
-        if (this._textTracks && this._textTracks[this._currentTextTrackIndex]) {
-            this._textTracks[this._currentTextTrackIndex].mode = 'disabled';
+        if (_this._textTracks && _this._textTracks[_this._currentTextTrackIndex]) {
+            _this._textTracks[_this._currentTextTrackIndex].mode = 'disabled';
         }
     }
 
     function textTrackChangeHandler() {
 
-        if (!this._textTracks || this.video.textTracks.length > this._textTracks.length) {
+        if (!_this._textTracks || this.video.textTracks.length > _this._textTracks.length) {
             // If the video element has more tracks than we have internally..
-            this.setTextTracks(this.video.textTracks);
+            _this.setTextTracks(this.video.textTracks);
         }
         // if a caption/subtitle track is showing, find its index
         var _selectedTextTrackIndex = -1, i = 0;
-        for (i; i < this._textTracks.length; i++) {
-            if (this._textTracks[i].mode === 'showing') {
+        for (i; i < _this._textTracks.length; i++) {
+            if (_this._textTracks[i].mode === 'showing') {
                 _selectedTextTrackIndex = i;
                 break;
             }
         }
-        this.setSubtitlesTrack(_selectedTextTrackIndex + 1);
+        _this.setSubtitlesTrack(_selectedTextTrackIndex + 1);
     }
 
     function addTextTracks(tracks) {
@@ -321,16 +322,16 @@ define(['../utils/underscore',
             return;
         }
 
-        if (!this._textTracks) {
+        if (!_this._textTracks) {
             _initTextTracks();
         }
 
-        this._renderNatively = _nativeRenderingSupported(this.getName().name);
+        _this._renderNatively = _nativeRenderingSupported(this.getName().name);
 
         for (var i = 0; i < tracks.length; i++) {
             var itemTrack = tracks[i];
             // only add valid kinds https://developer.mozilla.org/en-US/docs/Web/HTML/Element/track
-            if (this._renderNatively && !(/subtitles|captions|descriptions|chapters|metadata/i).test(itemTrack.kind)) {
+            if (_this._renderNatively && !(/subtitles|captions|descriptions|chapters|metadata/i).test(itemTrack.kind)) {
                 continue;
             }
             var track = _createTrack.call(this, itemTrack);
@@ -341,8 +342,8 @@ define(['../utils/underscore',
         }
 
         // We can setup the captions menu now since we're not rendering textTracks natively
-        if (!this._renderNatively && this._textTracks && this._textTracks.length) {
-            this.trigger('subtitlesTracks', {tracks: this._textTracks});
+        if (!_this._renderNatively && _this._textTracks && _this._textTracks.length) {
+            this.trigger('subtitlesTracks', {tracks: _this._textTracks});
         }
     }
 
@@ -352,7 +353,7 @@ define(['../utils/underscore',
         if (track.default || track.defaulttrack) {
             trackId = 'default';
         } else {
-            trackId = track._id || track.name || track.file || (prefix + this._textTracks.length);
+            trackId = track._id || track.name || track.file || (prefix + _this._textTracks.length);
         }
         return trackId;
     }
@@ -381,17 +382,17 @@ define(['../utils/underscore',
     }
 
     function _initTextTracks() {
-        this._textTracks = [];
-        this._tracksById = {};
-        this._metaCuesByTextTime = {};
-        this._cuesByTrackId = {};
-        this._unknownCount = 0;
-        this._renderNatively = false;
+        _this._textTracks = [];
+        _this._tracksById = {};
+        _this._metaCuesByTextTime = {};
+        _this._cuesByTrackId = {};
+        _this._unknownCount = 0;
+        _this._renderNatively = false;
     }
 
     function _createTrack(itemTrack) {
         var track;
-        if (this._renderNatively) {
+        if (_this._renderNatively) {
             var tracks = this.video.textTracks;
             track = _.findWhere(tracks, {'inuse': false});
             if (track) {
@@ -416,9 +417,9 @@ define(['../utils/underscore',
 
         if (!track.label) {
             track.label = 'Unknown CC';
-            this._unknownCount++;
-            if (this._unknownCount > 1) {
-                track.label += ' [' + this._unknownCount + ']';
+            _this._unknownCount++;
+            if (_this._unknownCount > 1) {
+                track.label += ' [' + _this._unknownCount + ']';
             }
         }
 
@@ -426,8 +427,8 @@ define(['../utils/underscore',
     }
 
     function _addTrackToList(track) {
-        this._textTracks.push(track);
-        this._tracksById[track._id] = track;
+        _this._textTracks.push(track);
+        _this._tracksById[track._id] = track;
     }
 
     function _parseTrack(itemTrack, track) {
@@ -438,43 +439,43 @@ define(['../utils/underscore',
 
     function _tracksAlreadySideloaded(tracks) {
         // Determine if the tracks are the same and the embedded + sideloaded count = # of tracks in the controlbar
-        return tracks === this.itemTracks && this._textTracks && this._textTracks.length >= tracks.length;
+        return tracks === _this.itemTracks && _this._textTracks && _this._textTracks.length >= tracks.length;
     }
 
     function _clearSideloadedTextTracks() {
         // Clear VTT textTracks
-        if (!this._textTracks) {
+        if (!_this._textTracks) {
             return;
         }
-        var nonSideloadedTracks = _.filter(this._textTracks, function (track) {
+        var nonSideloadedTracks = _.filter(_this._textTracks, function (track) {
             return track.embedded || track.groupid === 'subs';
         });
         _initTextTracks();
         _.each(nonSideloadedTracks, function (track) {
-            this._tracksById[track._id] = track;
+            _this._tracksById[track._id] = track;
         });
-        this._textTracks = nonSideloadedTracks;
+        _this._textTracks = nonSideloadedTracks;
     }
 
     function _addVTTCuesToTrack(track, vttCues) {
-        if (this._renderNatively) {
-            var textTrack = this._tracksById[track._id];
+        if (_this._renderNatively) {
+            var textTrack = _this._tracksById[track._id];
             // the track may not be on the video tag yet
             if (!textTrack) {
 
-                if (!this._cuesByTrackId) {
-                    this._cuesByTrackId = {};
+                if (!_this._cuesByTrackId) {
+                    _this._cuesByTrackId = {};
                 }
-                this._cuesByTrackId[track._id] = { cues: vttCues, loaded: false};
+                _this._cuesByTrackId[track._id] = { cues: vttCues, loaded: false};
                 return;
             }
             // Cues already added
-            if (this._cuesByTrackId[track._id] && this._cuesByTrackId[track._id].loaded) {
+            if (_this._cuesByTrackId[track._id] && _this._cuesByTrackId[track._id].loaded) {
                 return;
             }
 
             var cue;
-            this._cuesByTrackId[track._id] = { cues: vttCues, loaded: true };
+            _this._cuesByTrackId[track._id] = { cues: vttCues, loaded: true };
 
             while((cue = vttCues.pop())) {
                 textTrack.addCue(cue);
@@ -498,7 +499,7 @@ define(['../utils/underscore',
             var VTTParser = require('../parsers/captions/vttparser');
             var parser = new VTTParser(window);
             parser.oncue = function(cue) {
-                if (this._renderNatively) {
+                if (_this._renderNatively) {
                     track.addCue(cue);
                 } else {
                     track.data = track.data || [];
@@ -529,7 +530,7 @@ define(['../utils/underscore',
         var startTime = activeCues[activeCues.length - 1].startTime;
         //Prevent duplicate meta events for the same list of cues since the cue change handler fires once
         // for each activeCue in Safari
-        if (this._activeCuePosition === startTime) {
+        if (_this._activeCuePosition === startTime) {
             return;
         }
         var dataCues = [];
@@ -555,7 +556,7 @@ define(['../utils/underscore',
                 metadata: id3Data
             });
         }
-        this._activeCuePosition = startTime;
+        _this._activeCuePosition = startTime;
     }
 
     function _xhrSuccess(xhr, track) {
