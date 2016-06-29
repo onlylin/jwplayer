@@ -114,7 +114,7 @@ define(['../utils/underscore',
             // Add tracks if we're starting playback or resuming after a midroll
             if (this._renderNatively) {
                 disableTextTrack();
-                this._clearSideloadedTextTracks();
+                _clearSideloadedTextTracks();
             }
             this.itemTracks = tracks;
             addTextTracks.call(this, tracks);
