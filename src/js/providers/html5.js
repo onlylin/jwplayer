@@ -61,7 +61,7 @@ define([
         // Are we buffering due to seek, or due to playback?
         this.seeking = false;
 
-        _.extend(this, Events, Tracks);
+        _.extend(this, Events, new Tracks());
 
         // Overwrite the event dispatchers to block on certain occasions
         this.trigger = function(type, args) {
