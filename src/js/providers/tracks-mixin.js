@@ -33,8 +33,6 @@ define(['../utils/underscore',
         addVTTCue: addVTTCue
     };
 
-
-
     function setTextTracks(tracks) {
         this._currentTextTrackIndex = -1;
 
@@ -90,7 +88,7 @@ define(['../utils/underscore',
                         this._cuesByTrackId[track._id].loaded = true;
                     }
 
-                    this._addTrackToList(track);
+                    _addTrackToList(track);
                 }
             }
         }
@@ -222,7 +220,7 @@ define(['../utils/underscore',
                 embedded: true
             };
             track = _createTrack.call(this, itemTrack);
-            this._addTrackToList(track);
+            _addTrackToList(track);
         }
         track.addCue(cueData.cue);
     }
@@ -285,24 +283,9 @@ define(['../utils/underscore',
         this._unknownCount = 0;
         this._activeCuePosition = null;
         if (this._renderNatively) {
-            this._removeCues(this.video.textTracks);
+            _removeCues(this.video.textTracks);
         }
         this._renderNatively = false;
-    }
-
-    function _removeCues(tracks) {
-        if (tracks.length) {
-            _.each(tracks, function(track) {
-                // Cues are inaccessible if the track is disabled. While hidden,
-                // we can remove cues while the track is in a non-visible state
-                track.mode = 'hidden';
-                while (track.cues.length) {
-                    track.removeCue(track.cues[0]);
-                }
-                track.mode = 'disabled';
-                track.inuse = false;
-            });
-        }
     }
 
     function disableTextTrack() {
@@ -321,11 +304,26 @@ define(['../utils/underscore',
         var _selectedTextTrackIndex = -1, i = 0;
         for (i; i < this._textTracks.length; i++) {
             if (this._textTracks[i].mode === 'showing') {
-                this._selectedTextTrackIndex = i;
+                _selectedTextTrackIndex = i;
                 break;
             }
         }
-        this.setSubtitlesTrack(this._selectedTextTrackIndex + 1);
+        this.setSubtitlesTrack(_selectedTextTrackIndex + 1);
+    }
+
+    function _removeCues(tracks) {
+        if (tracks.length) {
+            _.each(tracks, function(track) {
+                // Cues are inaccessible if the track is disabled. While hidden,
+                // we can remove cues while the track is in a non-visible state
+                track.mode = 'hidden';
+                while (track.cues.length) {
+                    track.removeCue(track.cues[0]);
+                }
+                track.mode = 'disabled';
+                track.inuse = false;
+            });
+        }
     }
 
     function _cueChangeHandler(e) {
@@ -414,9 +412,9 @@ define(['../utils/underscore',
                 continue;
             }
             var track = _createTrack.call(this, itemTrack);
-            this._addTrackToList(track);
+            _addTrackToList(track);
             if (itemTrack.file) {
-                this._parseTrack(itemTrack, track);
+                _parseTrack(itemTrack, track);
             }
         }
 
@@ -433,7 +431,7 @@ define(['../utils/underscore',
 
     function _parseTrack(itemTrack, track) {
         utils.ajax(itemTrack.file, function(xhr) {
-            this._xhrSuccess(xhr, track);
+            _xhrSuccess(xhr, track);
         }, _errorHandler);
     }
 
