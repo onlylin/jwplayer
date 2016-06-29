@@ -73,12 +73,11 @@ define([
     //     assert.equal(provider.getSubtitlesTrack(), 0, 'current track did not update');
     // });
     //
-    test('add cues', function(assert) {
-        provider.addCuesToTrack({name: tracks[0].file, captions: [{begin: 1, end: 2, text: 'hi'}, {begin: 5, end: 7, text: 'bye'}]});
-        provider.addCuesToTrack({name: tracks[1].file, captions: [{begin: 10, end: 26, text: 'hello'}]});
-
-        assert.equal(tracks[0].data.length, 2, 'two cues were added to the track');
-        assert.equal(tracks[1].data.length, 1, 'two cues were added to the track');
-
-    });
+    // test('add cues', function(assert) {
+    //     provider.addCuesToTrack({name: tracks[0].file, captions: [{begin: 1, end: 2, text: 'hi'}, {begin: 5, end: 7, text: 'bye'}]});
+    //     provider.addCuesToTrack({name: tracks[1].file, captions: [{begin: 10, end: 26, text: 'hello'}]});
+    //
+    //     assert.equal(tracks[0].data.length, 2, 'two cues were added to the track');
+    //     assert.equal(tracks[1].data.length, 1, 'two cues were added to the track');
+    // });
 });

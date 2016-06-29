@@ -16,7 +16,6 @@ define([
     // polyfill webpack require.ensure
     //window.jwplayer.api = Api;
     require.ensure = function(array, callback, moduleName) {
-        console.log('Unit test polyfill for webpack require.ensure', '"'+ moduleName + '"');
         callback(function webpackRequire(modulePath) {
             return ({
                 'providers/html5': providerHtml5,
