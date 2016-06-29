@@ -221,7 +221,7 @@ define(['../utils/underscore',
                 label: label,
                 embedded: true
             };
-            track = this._createTrack.call(this, itemTrack);
+            track = _createTrack.call(this, itemTrack);
             this._addTrackToList(track);
         }
         track.addCue(cueData.cue);
@@ -413,7 +413,7 @@ define(['../utils/underscore',
             if (this._renderNatively && !(/subtitles|captions|descriptions|chapters|metadata/i).test(itemTrack.kind)) {
                 continue;
             }
-            var track = this._createTrack.call(this, itemTrack);
+            var track = _createTrack.call(this, itemTrack);
             this._addTrackToList(track);
             if (itemTrack.file) {
                 this._parseTrack(itemTrack, track);
